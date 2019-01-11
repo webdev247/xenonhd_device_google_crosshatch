@@ -1,0 +1,77 @@
+#
+# Copyright (C) 2017 The Android Open-Source Project
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#      http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+import /vendor/etc/init/hw/init.${ro.boot.hardware.platform}.rc
+
+on init
+    setprop ro.sf.lcd_density 560
+
+on late-init && property:ro.boot.hardware.revision=DEV1.0
+    setprop vendor.thermal.hw_mode "-evt"
+    write /sys/devices/virtual/thermal/tz-by-name/quiet-therm-adc/mode enabled
+
+on late-init && property:ro.boot.hardware.revision=PROTO1.0
+    setprop vendor.thermal.hw_mode "-evt"
+    write /sys/devices/virtual/thermal/tz-by-name/quiet-therm-adc/mode enabled
+
+on late-init && property:ro.boot.hardware.revision=PROTO1.1
+    setprop vendor.thermal.hw_mode "-evt"
+    write /sys/devices/virtual/thermal/tz-by-name/quiet-therm-adc/mode enabled
+
+on late-init && property:ro.boot.hardware.revision=PROTO1.2
+    setprop vendor.thermal.hw_mode "-evt"
+    write /sys/devices/virtual/thermal/tz-by-name/quiet-therm-adc/mode enabled
+
+on late-init && property:ro.boot.hardware.revision=EVT1.0
+    setprop vendor.thermal.hw_mode "-evt"
+    write /sys/devices/virtual/thermal/tz-by-name/quiet-therm-adc/mode enabled
+
+on property:vendor.all.modules.ready=1
+    chown system system /sys/devices/virtual/sec/tsp/cmd
+
+on property:sys.boot_completed=1
+    # HardwareInfo needs to be able to read display info
+    chmod 644 /sys/devices/platform/soc/soc:qcom,dsi-display@52/panel_info/panel0/serial_number
+    chmod 644 /sys/devices/platform/soc/soc:qcom,dsi-display@52/panel_info/panel0/panel_vendor_name
+
+    # configure governor settings for little cluster
+    write /sys/devices/system/cpu/cpufreq/policy0/scaling_min_freq 576000
+
+    # configure governor settings for big cluster
+    write /sys/devices/system/cpu/cpufreq/policy4/scaling_min_freq 825000
+
+    # Set I/O Scheduler tweaks
+    write /sys/block/sda/queue/scheduler maple
+    write /sys/block/sda/queue/read_ahead_kb 512
+    write /sys/block/sda/queue/iosched/writes_starved 4
+    write /sys/block/sda/queue/iosched/fifo_batch 16
+    write /sys/block/sda/queue/iosched/sync_read_expire 350
+    write /sys/block/sda/queue/iosched/sync_write_expire 550
+    write /sys/block/sda/queue/iosched/async_read_expire 250
+    write /sys/block/sda/queue/iosched/async_write_expire 450
+    write /sys/block/sda/queue/iosched/sleep_latency_multiple 10
+    write /sys/block/sdf/queue/scheduler maple
+    write /sys/block/sdf/queue/read_ahead_kb 512
+    write /sys/block/sdf/queue/iosched/writes_starved 4
+    write /sys/block/sdf/queue/iosched/fifo_batch 16
+    write /sys/block/sdf/queue/iosched/sync_read_expire 350
+    write /sys/block/sdf/queue/iosched/sync_write_expire 550
+    write /sys/block/sdf/queue/iosched/async_read_expire 250
+    write /sys/block/sdf/queue/iosched/async_write_expire 450
+    write /sys/block/sdf/queue/iosched/sleep_latency_multiple 10
+
+    # Disable sched boost
+    write /proc/sys/kernel/sched_boost 0
